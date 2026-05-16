@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: peptide-research-wiki
+    name: peptide-tracker-app
     env: python
     plan: free
     buildCommand: pip install -r requirements.txt

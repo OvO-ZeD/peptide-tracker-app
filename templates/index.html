@@ -2,170 +2,20 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Peptide Database</title>
+  <title>Peptide Tracker</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-dark density-clinical">
   <div class="bg-particles" id="bg_particles"></div>
-  <div class="app-shell">
-    <aside class="side-nav panel">
-      <button id="mode_research" class="mode-btn active" onclick="setMode('research')">Research</button>
-      <button id="mode_order" class="mode-btn" onclick="setMode('order')">Order</button>
-      <button id="mode_stack" class="mode-btn" onclick="setMode('stack')">Stack</button>
-      <button id="mode_tracker" class="mode-btn" onclick="setMode('tracker')">Tracker</button>
-    </aside>
-    <div class="page">
+  <div class="page">
     <div class="top-controls panel">
       <button id="theme_toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
-      <div class="density-group">
-        <button onclick="setDensity('compact')">Compact</button>
-        <button onclick="setDensity('clinical')">Clinical</button>
-        <button onclick="setDensity('deep')">Deep</button>
-      </div>
-      <button onclick="saveCurrentPeptide()">Save Peptide</button>
+      <div class="app-label">Tracker</div>
     </div>
-    <h1>Peptide Research Wiki</h1>
-    <p class="subtitle">Search a peptide and get public research, trial details, plain-language summaries, methods, and source links.</p>
+    <h1>Peptide Tracker</h1>
+    <p class="subtitle">Simple weekly peptide tracking with dose planning and unit calculation.</p>
 
-    <div id="research_mode">
-    <div id="search" class="panel">
-      <label for="search_term">Search Peptide</label>
-      <div class="search-row">
-        <input type="text" id="search_term" name="search_term" placeholder="e.g., retatrutide, semaglutide, bpc-157">
-        <button id="search_btn" onclick="searchPeptide()">Search</button>
-      </div>
-      <div class="search-row second-row">
-        <input type="text" id="compare_term" name="compare_term" placeholder="Compare with (optional): e.g., tesa">
-        <select id="trial_filter" onchange="applyTrialFilter()">
-          <option value="ALL">All trial statuses</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="RECRUITING">Recruiting</option>
-          <option value="ACTIVE_NOT_RECRUITING">Active not recruiting</option>
-        </select>
-      </div>
-      <p id="status_message"></p>
-    </div>
-
-    <div id="peptide_info" class="panel">
-      <h2>Peptide Information</h2>
-      <p id="freshness_info"></p>
-      <div id="clinical_snapshot" class="clinical-snapshot"></div>
-      <div id="quick_summary" class="quick-summary"></div>
-      <div class="profile-top">
-        <div class="vial-wrap">
-          <div id="vial_scene">
-            <div id="vial_model">
-              <div class="vial-cap"></div>
-              <div class="vial-body">
-                <span id="vial_label">PEPTIDE</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="identity-wrap">
-          <p id="alias_info"></p>
-          <p id="peptide_name"></p>
-        </div>
-      </div>
-      <details open>
-        <summary>Description</summary>
-        <p id="medical_definition"></p>
-      </details>
-      <details open>
-        <summary>Plain-Language Summary</summary>
-        <p id="research"></p>
-      </details>
-      <details open>
-        <summary>Clinical Methods of Administration</summary>
-        <p id="methods"></p>
-      </details>
-      <details open>
-        <summary>Benefits</summary>
-        <ul id="benefits_list"></ul>
-      </details>
-      <details open>
-        <summary>Cons and Risks</summary>
-        <ul id="cons_list"></ul>
-      </details>
-      <div id="evidence_section"></div>
-      <div id="timeline_section"></div>
-      <div class="tab-shell">
-        <div class="bottom-tabs">
-          <button id="tab_overview" class="tab-btn active" onclick="setTab('overview')">Overview</button>
-          <button id="tab_trials" class="tab-btn" onclick="setTab('trials')">Clinical Trial Research</button>
-          <button id="tab_sources" class="tab-btn" onclick="setTab('sources')">Sources</button>
-        </div>
-        <div id="tab_content_overview" class="tab-content active"></div>
-        <div id="tab_content_trials" class="tab-content">
-          <div id="trials_section"></div>
-        </div>
-        <div id="tab_content_sources" class="tab-content">
-          <div id="pubmed_section"></div>
-          <div id="sources_section"></div>
-        </div>
-      </div>
-      <div id="compare_section"></div>
-      <div id="watchlist_section"></div>
-    </div>
-    </div>
-
-    <div id="order_mode" class="panel mode-hidden">
-      <h2>Order Peptides</h2>
-      <p class="subtitle">Select products, set quantity, and submit a free order request.</p>
-      <div class="order-disclaimer">
-        <strong>Disclaimer:</strong> Not for human use. For research purposes only. This brand sources peptides from various vendors, and COA can be provided upon request if needed. Peptides are taken directly from manufacturers and made easy to supply in Canada.
-      </div>
-      <div id="order_catalog"></div>
-      <div class="order-form">
-        <input id="order_customer_name" type="text" placeholder="Your name">
-        <input id="order_contact" type="text" placeholder="Contact info (email/phone/telegram)">
-        <textarea id="order_notes" placeholder="Order notes (optional)"></textarea>
-        <div id="order_total"></div>
-        <button id="order_submit_btn" onclick="submitOrderRequest()">Submit Order Request</button>
-        <p id="order_status"></p>
-      </div>
-    </div>
-
-    <div id="stack_mode" class="panel mode-hidden">
-      <h2>Stack Recommendations</h2>
-      <p class="subtitle">Goal-based research stack suggestions ranked by evidence quality and objective alignment.</p>
-      <div class="stack-controls">
-        <select id="stack_goal">
-          <option value="fat_loss">Fat Loss</option>
-          <option value="lean_mass">Lean Mass Support</option>
-          <option value="focus_calm">Focus / Calm</option>
-          <option value="tanning">Tanning / UV Response</option>
-          <option value="recovery_healing">Recovery / Healing Support</option>
-          <option value="sleep_stress">Sleep / Stress Regulation</option>
-          <option value="endurance_performance">Endurance / Performance</option>
-          <option value="metabolic_health">Metabolic Health</option>
-        </select>
-        <select id="stack_priority">
-          <option value="retatrutide">Retatrutide</option>
-          <option value="tesamorelin">Tesamorelin</option>
-          <option value="ipamorelin">Ipamorelin</option>
-          <option value="mots-c">MOTS-c</option>
-          <option value="semaglutide">Semaglutide</option>
-          <option value="tirzepatide">Tirzepatide</option>
-          <option value="semax">Semax</option>
-          <option value="selank">Selank</option>
-          <option value="melanotan-2">Melanotan-2</option>
-          <option value="ghk-cu">GHK-Cu</option>
-          <option value="tb-500">TB-500</option>
-          <option value="aod-9604">AOD-9604</option>
-          <option value="dsip">DSIP</option>
-          <option value="ss-31">SS-31</option>
-        </select>
-        <button id="stack_btn" onclick="loadStackRecommendations()">Generate Stack</button>
-      </div>
-      <div class="stack-disclaimer">
-        <strong>Research Notice:</strong> Educational research context only. Not medical advice. Community protocol signals are labeled anecdotal and should be weighed below controlled trial evidence.
-      </div>
-      <div id="stack_status"></div>
-      <div id="stack_results"></div>
-    </div>
-
-    <div id="tracker_mode" class="panel mode-hidden">
+    <div id="tracker_mode" class="panel">
       <h2>Peptide Cycle Tracker</h2>
       <p class="subtitle">Track doses, frequency, weekly administrations, and vial unit conversions.</p>
       <div class="tracker-controls">
@@ -208,14 +58,6 @@
       </div>
     </div>
 
-    <div id="stack_modal" class="stack-modal mode-hidden">
-      <div class="stack-modal-backdrop" onclick="closeStackModal()"></div>
-      <div class="stack-modal-dialog panel">
-        <button id="stack_modal_close" class="stack-modal-close" onclick="closeStackModal()">Close</button>
-        <div id="stack_modal_content"></div>
-      </div>
-    </div>
-    </div>
   </div>
 
   <script src="script.js"></script>

@@ -6,8 +6,6 @@ Create a new empty repository named `peptide-tracker-app`.
 
 ## 2) Push this app folder as the repo root
 
-Run:
-
 ```bash
 cd /home/foruse/CODES/peptide_tracker_app
 git init
@@ -20,7 +18,7 @@ git remote add origin https://github.com/YOUR_USERNAME/peptide-tracker-app.git
 git push -u origin main
 ```
 
-If you want this identity available for all your repos on this machine, use:
+If needed globally:
 
 ```bash
 git config --global user.name "Your Name"
@@ -31,12 +29,13 @@ git config --global user.email "you@example.com"
 
 1. Open Render dashboard.
 2. Click New + -> Web Service.
-3. Connect your `peptide-tracker-app` GitHub repository.
-4. Render should detect `render.yaml` automatically.
+3. Connect `peptide-tracker-app` repository.
+4. Render detects `render.yaml`.
 5. Confirm deploy.
 
 Current config:
 
+- service: `peptide-tracker-app`
 - plan: free
 - autoDeploy: true
 - build: `pip install -r requirements.txt`
@@ -44,7 +43,7 @@ Current config:
 
 ## 4) Auto updates
 
-Any future push to `main` will auto redeploy.
+Any push to `main` auto redeploys.
 
 ```bash
 cd /home/foruse/CODES/peptide_tracker_app
