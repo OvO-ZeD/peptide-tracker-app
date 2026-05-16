@@ -3,6 +3,9 @@ var trackerState = {
   currentTabId: null
 };
 
+var STORAGE_KEY_V2 = "peptide_tracker_state_v2";
+var STORAGE_KEY_V1 = "peptide_tracker_state_v1";
+
 function getWeekKey(dateObj) {
   var d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
   var day = d.getUTCDay() || 7;
@@ -13,7 +16,7 @@ function getWeekKey(dateObj) {
 }
 
 function trackerStorageKey() {
-  return "peptide_tracker_state_v1";
+  return STORAGE_KEY_V2;
 }
 
 function persistTrackerState() {
@@ -30,7 +33,10 @@ function getCurrentTrackerTab() {
 }
 
 function loadTrackerState() {
-  var raw = localStorage.getItem(trackerStorageKey());
+  var raw = localStorage.getItem(STORAGE_KEY_V2);
+  if (!raw) {
+    raw = localStorage.getItem(STORAGE_KEY_V1);
+  }
   if (raw) {
     try {
       var parsed = JSON.parse(raw);
@@ -50,6 +56,18 @@ function loadTrackerState() {
   if (!trackerState.currentTabId || !getCurrentTrackerTab()) {
     trackerState.currentTabId = trackerState.tabs[0].id;
   }
+  persistTrackerState();
+}
+
+function pulseElement(id) {
+  var el = document.getElementById(id);
+  if (!el) {
+    return;
+  }
+  el.classList.remove("pulse");
+  window.requestAnimationFrame(function() {
+    el.classList.add("pulse");
+  });
 }
 
 function escapeHtml(text) {
@@ -118,6 +136,7 @@ function saveTrackerDetails() {
   tab.frequencyPerWeek = Number(document.getElementById("tracker_frequency").value || 1);
   persistTrackerState();
   renderTrackerWeeklyTotal();
+  pulseElement("tracker_weekly_total");
 }
 
 function renderTrackerWeeklyTotal() {
@@ -141,6 +160,7 @@ function calculateUnits() {
   var doseMl = dose / concentrationMgPerMl;
   var units = doseMl * 100;
   document.getElementById("calc_result").innerText = "Inject " + units.toFixed(1) + " units (" + doseMl.toFixed(2) + " ml).";
+  pulseElement("calc_result");
 }
 
 function logAdministrationNow() {
@@ -156,6 +176,7 @@ function logAdministrationNow() {
   tab.logsByWeek[week].push(now.toISOString());
   persistTrackerState();
   renderTrackerLogs();
+  pulseElement("tracker_log_count");
 }
 
 function clearWeeklyLogs() {
@@ -201,6 +222,12 @@ function renderTracker() {
   renderTrackerForm();
 }
 
+function registerServiceWorker() {
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/sw.js");
+  }
+}
+
 function toggleTheme() {
   document.body.classList.toggle("theme-dark");
 }
@@ -220,3 +247,4 @@ function attachBackgroundParallax() {
 attachBackgroundParallax();
 loadTrackerState();
 renderTracker();
+registerServiceWorker();

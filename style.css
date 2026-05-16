@@ -4,6 +4,8 @@ body {
   background: radial-gradient(1200px 600px at 10% 0%, #1e293b 0%, #0f172a 38%, #020617 100%);
   color: #dbe7ff;
   overflow-x: hidden;
+  font-size: 17px;
+  line-height: 1.45;
 }
 
 .bg-particles {
@@ -51,6 +53,13 @@ body {
   padding: 22px;
   box-shadow: 0 10px 40px rgba(2, 6, 23, 0.45);
   backdrop-filter: blur(6px);
+  transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+}
+
+.panel:hover {
+  transform: translateY(-2px);
+  border-color: #3b82f6;
+  box-shadow: 0 14px 40px rgba(2, 6, 23, 0.55);
 }
 
 .top-controls {
@@ -67,6 +76,21 @@ body {
   padding: 10px 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.top-controls button:hover,
+.tracker-controls button:hover,
+.tracker-card button:hover {
+  transform: translateY(-1px);
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.18);
+}
+
+.top-controls button:active,
+.tracker-controls button:active,
+.tracker-card button:active {
+  transform: translateY(0);
 }
 
 .app-label {
@@ -76,6 +100,7 @@ body {
 
 h1 { margin: 0; font-size: 40px; letter-spacing: -0.5px; }
 .subtitle { margin-top: 10px; color: #9bb1d6; line-height: 1.5; }
+.privacy-note { margin-top: 4px; color: #7dd3fc; font-size: 14px; }
 
 .tracker-controls {
   display: grid;
@@ -105,10 +130,48 @@ h1 { margin: 0; font-size: 40px; letter-spacing: -0.5px; }
 .tracker-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .tracker-card { border: 1px solid #2d3d62; border-radius: 12px; padding: 12px; background: rgba(9, 14, 28, 0.72); display: grid; gap: 8px; }
 
+.pulse {
+  animation: pulseGlow 0.45s ease;
+}
+
+@keyframes pulseGlow {
+  0% { opacity: 0.85; transform: scale(0.99); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.mobile-quick-actions {
+  display: none;
+}
+
 .theme-dark { background: linear-gradient(180deg, #0f172a 0%, #111827 100%); color: #dbe7ff; }
 
 @media (max-width: 760px) {
+  .page { padding: calc(24px + env(safe-area-inset-top)) 14px calc(90px + env(safe-area-inset-bottom)); }
   .tracker-controls { grid-template-columns: 1fr; }
   .tracker-grid { grid-template-columns: 1fr; }
   .top-controls { flex-direction: column; align-items: stretch; gap: 8px; }
+  h1 { font-size: 34px; }
+  .mobile-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    z-index: 20;
+    padding: 8px;
+    border: 1px solid #2f3f62;
+    border-radius: 12px;
+    background: rgba(9, 14, 28, 0.92);
+    backdrop-filter: blur(8px);
+  }
+  .mobile-quick-actions button {
+    padding: 12px 8px;
+    border-radius: 10px;
+    border: 1px solid #35507d;
+    background: #0b1224;
+    color: #dbe7ff;
+    font-weight: 700;
+  }
 }
