@@ -2,8 +2,13 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1224">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Peptide Tracker">
   <title>Peptide Tracker</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.webmanifest">
 </head>
 <body class="theme-dark density-clinical">
   <div class="bg-particles" id="bg_particles"></div>
@@ -14,6 +19,7 @@
     </div>
     <h1>Peptide Tracker</h1>
     <p class="subtitle">Simple weekly peptide tracking with dose planning and unit calculation.</p>
+    <p class="privacy-note">Saved only on your device. Your cycles are private to this browser.</p>
 
     <div id="tracker_mode" class="panel">
       <h2>Peptide Cycle Tracker</h2>
@@ -55,6 +61,11 @@
           <p id="tracker_log_count"></p>
           <ul id="tracker_logs"></ul>
         </div>
+      </div>
+      <div class="mobile-quick-actions">
+        <button onclick="logAdministrationNow()">Log Dose</button>
+        <button onclick="saveTrackerDetails()">Save</button>
+        <button onclick="addPeptideTab()">Add Tab</button>
       </div>
     </div>
 
