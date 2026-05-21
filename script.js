@@ -7,6 +7,8 @@ var STORAGE_KEY_V2 = "peptide_tracker_state_v2";
 var STORAGE_KEY_V1 = "peptide_tracker_state_v1";
 var currentView = "home";
 var editingLogRef = null;
+var undoDeleteState = null;
+var undoDeleteTimer = null;
 
 function getWeekKey(dateObj) {
   var d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
@@ -18,7 +20,11 @@ function getWeekKey(dateObj) {
 }
 
 function trackerStorageKey() { return STORAGE_KEY_V2; }
-function persistTrackerState() { localStorage.setItem(trackerStorageKey(), JSON.stringify(trackerState)); }
+function setAutosaveStatus(text) {
+  var el = document.getElementById("autosave_status");
+  if (el) el.textContent = text;
+}
+function persistTrackerState() { localStorage.setItem(trackerStorageKey(), JSON.stringify(trackerState)); setAutosaveStatus("Saved"); }
 
 function getCurrentTrackerTab() {
   for (var i = 0; i < trackerState.tabs.length; i++) {
@@ -113,6 +119,29 @@ function renderWeeklyProgress(tab) {
   root.innerHTML = "<div class=\"weekly-progress-top\"><strong>Weekly progress</strong><span>" + actual.toFixed(2) + " / " + planned.toFixed(2) + " mg</span></div><div class=\"weekly-progress-bar\"><div class=\"weekly-progress-fill\" style=\"width:" + pct + "%\"></div></div>";
 }
 
+function renderInsights(tab) {
+  var root = document.getElementById("logs_insights");
+  if (!root || !tab) return;
+  var planned = (Number(tab.frequencyPerWeek) || 0) * (Number(tab.doseMg) || 0);
+  var actual = getWeeklyActualMg(tab);
+  var adherence = planned > 0 ? Math.round((actual / planned) * 100) : 0;
+  var latest = null;
+  var total7d = 0;
+  var cutoff = Date.now() - (7 * 86400000);
+  var logsByWeek = tab.logsByWeek || {};
+  for (var wk in logsByWeek) {
+    var arr = logsByWeek[wk] || [];
+    for (var i = 0; i < arr.length; i++) {
+      var rec = normalizeLogEntry(arr[i], tab);
+      if (!rec) continue;
+      var t = new Date(rec.at).getTime();
+      if (!latest || t > latest) latest = t;
+      if (t >= cutoff) total7d += Number(rec.doseMg || 0);
+    }
+  }
+  root.innerHTML = "<div class=\"insight-card\"><div class=\"k\">Adherence</div><div class=\"v\">" + adherence + "%</div></div><div class=\"insight-card\"><div class=\"k\">Last Dose</div><div class=\"v\">" + (latest ? new Date(latest).toLocaleString() : "N/A") + "</div></div><div class=\"insight-card\"><div class=\"k\">Last 7 Days</div><div class=\"v\">" + total7d.toFixed(2) + " mg</div></div>";
+}
+
 function getFlatLogsWithRefs(tab) {
   var out = [];
   var logsByWeek = tab.logsByWeek || {};
@@ -201,7 +230,36 @@ function setLogDatePreset(preset) {
 function deleteLogEntry(weekKey, index) {
   var tab = getCurrentTrackerTab();
   if (!tab || !tab.logsByWeek[weekKey]) return;
-  tab.logsByWeek[weekKey].splice(index, 1);
+  var removed = tab.logsByWeek[weekKey].splice(index, 1)[0];
+  undoDeleteState = { weekKey: weekKey, index: index, record: removed };
+  showUndoToast();
+  persistTrackerState();
+  renderTrackerLogs();
+  if (currentView === "logs") renderLogsView();
+}
+
+function showUndoToast() {
+  var toast = document.getElementById("undo_toast");
+  if (!toast || !undoDeleteState) return;
+  toast.classList.add("show");
+  toast.innerHTML = "<span>Log deleted</span><button onclick=\"undoDeleteLogEntry()\">Undo</button>";
+  if (undoDeleteTimer) window.clearTimeout(undoDeleteTimer);
+  undoDeleteTimer = window.setTimeout(function() {
+    undoDeleteState = null;
+    toast.classList.remove("show");
+  }, 10000);
+}
+
+function undoDeleteLogEntry() {
+  var tab = getCurrentTrackerTab();
+  if (!tab || !undoDeleteState) return;
+  var weekKey = undoDeleteState.weekKey;
+  if (!tab.logsByWeek[weekKey]) tab.logsByWeek[weekKey] = [];
+  tab.logsByWeek[weekKey].splice(undoDeleteState.index, 0, undoDeleteState.record);
+  undoDeleteState = null;
+  if (undoDeleteTimer) window.clearTimeout(undoDeleteTimer);
+  var toast = document.getElementById("undo_toast");
+  if (toast) toast.classList.remove("show");
   persistTrackerState();
   renderTrackerLogs();
   if (currentView === "logs") renderLogsView();
@@ -351,7 +409,7 @@ function clearWeeklyLogs() {
 function clearAllLogsForCurrentTab() {
   var tab = getCurrentTrackerTab();
   if (!tab) return;
-  var ok = window.confirm("Clear all logs for this peptide tab and restart cycle?");
+  var ok = window.confirm("Clear all logs for this peptide tab and restart cycle? This cannot be undone.");
   if (!ok) return;
   tab.logsByWeek = {};
   persistTrackerState();
@@ -430,6 +488,7 @@ function renderLogsView() {
   totalCountEl.textContent = total + " total logs";
   groupsRoot.innerHTML = html || "<p class=\"muted\">No historical logs yet. Log your first administration from Home.</p>";
   renderWeeklyProgress(tab);
+  renderInsights(tab);
   renderLogsChart(dateGroups, tab);
 }
 

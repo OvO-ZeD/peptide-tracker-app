@@ -23,6 +23,7 @@
       <div class="top-controls panel">
         <button id="theme_toggle" onclick="toggleTheme()">Toggle Dark Mode</button>
         <div class="app-label" id="view_label">Home</div>
+        <div id="autosave_status" class="autosave-status">Saved</div>
       </div>
 
       <section id="view_home" class="view-section active">
@@ -102,6 +103,7 @@
             </div>
           </div>
           <div id="logs_weekly_progress" class="weekly-progress"></div>
+          <div id="logs_insights" class="insights-grid"></div>
           <canvas id="logs_chart" height="180"></canvas>
           <div id="logs_groups" class="logs-groups"></div>
         </div>
@@ -122,7 +124,8 @@
       </div>
     </div>
   </div>
+  <div id="undo_toast" class="undo-toast"></div>
 
-  <script src="script.js?v=20260521h"></script>
+  <script src="script.js?v=20260521i"></script>
 </body>
 </html>
