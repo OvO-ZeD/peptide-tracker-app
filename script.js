@@ -107,6 +107,61 @@ function requestReminderPermission() {
   });
 }
 
+function urlBase64ToUint8Array(base64String) {
+  var padding = "=".repeat((4 - base64String.length % 4) % 4);
+  var base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+  var rawData = window.atob(base64);
+  var outputArray = new Uint8Array(rawData.length);
+  for (var i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
+function registerPushReminderForCurrentTab() {
+  if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
+    window.alert("Push reminders are not supported on this device/browser.");
+    return;
+  }
+  if (!("Notification" in window) || Notification.permission !== "granted") {
+    window.alert("Please tap Enable Notifications first.");
+    return;
+  }
+
+  var tab = getCurrentTrackerTab();
+  if (!tab) return;
+
+  fetch("/api/push/public-key").then(function(r) { return r.json(); }).then(function(cfg) {
+    if (!cfg || !cfg.publicKey) throw new Error("Missing VAPID public key on server.");
+    return navigator.serviceWorker.ready.then(function(reg) {
+      return reg.pushManager.getSubscription().then(function(existing) {
+        if (existing) return existing;
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(cfg.publicKey)
+        });
+      });
+    });
+  }).then(function(subscription) {
+    return fetch("/api/push/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        subscription: subscription,
+        tabId: tab.id,
+        peptideName: tab.peptideName || tab.name || "Peptide",
+        everyDays: Number(tab.routineIntervalDays || 1),
+        routineTime: tab.routineTime || "08:00",
+        leadMinutes: Number(tab.reminderLeadMinutes || 0),
+        enabled: !!tab.reminderEnabled
+      })
+    });
+  }).then(function(r) { return r.json(); }).then(function(resp) {
+    if (!resp || resp.error) throw new Error((resp && resp.error) || "Failed to register reminder.");
+    window.alert("Server reminder registered. Next reminder: " + (resp.nextDueAt || "scheduled"));
+  }).catch(function(err) {
+    window.alert("Could not register server reminder: " + (err && err.message ? err.message : "unknown error"));
+  });
+}
+
 function sendTestReminderNotification() {
   if (!("Notification" in window)) {
     window.alert("Notifications are not supported on this device/browser.");
@@ -212,6 +267,9 @@ function saveRoutineSettings() {
   persistTrackerState();
   renderNextShotCard();
   scheduleReminderForTab(tab);
+  if (tab.reminderEnabled && Notification.permission === "granted") {
+    registerPushReminderForCurrentTab();
+  }
 }
 
 function logUpcomingShotNow() {
