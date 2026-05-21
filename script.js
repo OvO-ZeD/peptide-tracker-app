@@ -91,6 +91,90 @@ function formatDateHeading(dateKey) {
   return d.toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" });
 }
 
+function getWeeklyActualMg(tab) {
+  if (!tab) return 0;
+  var week = getWeekKey(new Date());
+  var logs = tab.logsByWeek[week] || [];
+  var total = 0;
+  for (var i = 0; i < logs.length; i++) {
+    var rec = normalizeLogEntry(logs[i], tab);
+    total += Number((rec && rec.doseMg) || 0);
+  }
+  return total;
+}
+
+function renderWeeklyProgress(tab) {
+  var root = document.getElementById("logs_weekly_progress");
+  if (!root || !tab) return;
+  var planned = (Number(tab.frequencyPerWeek) || 0) * (Number(tab.doseMg) || 0);
+  var actual = getWeeklyActualMg(tab);
+  var pct = planned > 0 ? Math.min(100, Math.round((actual / planned) * 100)) : 0;
+  root.innerHTML = "<div class=\"weekly-progress-top\"><strong>Weekly progress</strong><span>" + actual.toFixed(2) + " / " + planned.toFixed(2) + " mg</span></div><div class=\"weekly-progress-bar\"><div class=\"weekly-progress-fill\" style=\"width:" + pct + "%\"></div></div>";
+}
+
+function getFlatLogsWithRefs(tab) {
+  var out = [];
+  var logsByWeek = tab.logsByWeek || {};
+  for (var week in logsByWeek) {
+    if (!Object.prototype.hasOwnProperty.call(logsByWeek, week)) continue;
+    var arr = logsByWeek[week] || [];
+    for (var i = 0; i < arr.length; i++) {
+      out.push({ week: week, index: i, record: normalizeLogEntry(arr[i], tab) });
+    }
+  }
+  return out;
+}
+
+function exportCurrentTabLogsCsv() {
+  var tab = getCurrentTrackerTab();
+  if (!tab) return;
+  var rows = getFlatLogsWithRefs(tab);
+  var csv = "datetime,peptide,dose_mg\n";
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i].record;
+    if (!r) continue;
+    csv += '"' + String(r.at || "").replace(/"/g, '""') + '",';
+    csv += '"' + String(r.peptideName || "").replace(/"/g, '""') + '",';
+    csv += Number(r.doseMg || 0).toFixed(2) + "\n";
+  }
+  var blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = (tab.name || "peptide") + "-logs.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function deleteLogEntry(weekKey, index) {
+  var tab = getCurrentTrackerTab();
+  if (!tab || !tab.logsByWeek[weekKey]) return;
+  tab.logsByWeek[weekKey].splice(index, 1);
+  persistTrackerState();
+  renderTrackerLogs();
+  if (currentView === "logs") renderLogsView();
+}
+
+function editLogEntry(weekKey, index) {
+  var tab = getCurrentTrackerTab();
+  if (!tab || !tab.logsByWeek[weekKey] || !tab.logsByWeek[weekKey][index]) return;
+  var current = normalizeLogEntry(tab.logsByWeek[weekKey][index], tab);
+  var newDose = window.prompt("Dose (mg)", Number(current.doseMg || 0).toFixed(2));
+  if (newDose === null) return;
+  var newDate = window.prompt("Date/Time (ISO)", current.at || new Date().toISOString());
+  if (newDate === null) return;
+  tab.logsByWeek[weekKey][index] = {
+    at: new Date(newDate).toISOString(),
+    peptideName: current.peptideName || tab.peptideName || tab.name || "Peptide",
+    doseMg: Number(newDose || 0)
+  };
+  persistTrackerState();
+  renderTrackerLogs();
+  if (currentView === "logs") renderLogsView();
+}
+
 
 
 function renderTrackerTabs() {
@@ -224,12 +308,19 @@ function getHistoricalLogDates(tab) {
   var logsByWeek = tab.logsByWeek || {};
   for (var week in logsByWeek) {
     if (Object.prototype.hasOwnProperty.call(logsByWeek, week) && logsByWeek[week] && logsByWeek[week].length) {
-      var normalized = logsByWeek[week].map(function(item) { return normalizeLogEntry(item, tab); }).filter(Boolean);
-      for (var i = 0; i < normalized.length; i++) {
-        var rec = normalized[i];
+      var source = logsByWeek[week];
+      for (var i = 0; i < source.length; i++) {
+        var rec = normalizeLogEntry(source[i], tab);
+        if (!rec) continue;
         var dateKey = getDateKeyFromIso(rec.at);
         if (!grouped[dateKey]) grouped[dateKey] = [];
-        grouped[dateKey].push(rec);
+        grouped[dateKey].push({
+          at: rec.at,
+          peptideName: rec.peptideName,
+          doseMg: rec.doseMg,
+          weekKey: week,
+          weekIndex: i
+        });
       }
     }
   }
@@ -265,6 +356,7 @@ function renderLogsView() {
       html += "<li class=\"log-record\">";
       html += "<div class=\"log-record-top\"><strong>" + escapeHtml(rec.peptideName || "Peptide") + "</strong> <em>" + Number(rec.doseMg || 0).toFixed(2) + " mg</em></div>";
       html += "<div class=\"log-record-time\">" + new Date(rec.at).toLocaleString() + "</div>";
+      html += "<div class=\"log-record-actions\"><button onclick=\"editLogEntry('" + dateGroups[i].logs[j].weekKey + "'," + dateGroups[i].logs[j].weekIndex + ")\">Edit</button><button onclick=\"deleteLogEntry('" + dateGroups[i].logs[j].weekKey + "'," + dateGroups[i].logs[j].weekIndex + ")\">Delete</button></div>";
       html += "</li>";
     }
     html += "</ul></details>";
@@ -272,6 +364,7 @@ function renderLogsView() {
 
   totalCountEl.textContent = total + " total logs";
   groupsRoot.innerHTML = html || "<p class=\"muted\">No historical logs yet. Log your first administration from Home.</p>";
+  renderWeeklyProgress(tab);
   renderLogsChart(dateGroups, tab);
 }
 

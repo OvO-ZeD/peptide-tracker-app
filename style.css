@@ -103,7 +103,12 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
 .tracker-card h4 { margin: 1px 0 0; font-size: 15px; font-weight: 800; font-style: italic; color: #ffd0d0; }
 .logs-panel { display:grid; gap:10px; }
 .logs-header-row { display:flex; justify-content:space-between; align-items:center; }
+.logs-header-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
 .badge { border:1px solid rgba(255,90,90,.34); border-radius:999px; padding:4px 10px; color:#ffb8b8; font-size:13px; }
+.weekly-progress { border:1px solid rgba(255,90,90,.24); border-radius:12px; padding:8px 10px; background: rgba(13,13,18,.68); display:grid; gap:6px; }
+.weekly-progress-top { display:flex; justify-content:space-between; gap:8px; font-size:13px; color:#ffdede; }
+.weekly-progress-bar { height:8px; border-radius:999px; background: rgba(255,255,255,.12); overflow:hidden; }
+.weekly-progress-fill { height:100%; border-radius:999px; background: linear-gradient(90deg, #ff5a5a, #ff2a6d); }
 #logs_chart { width:100%; border:1px solid var(--border); border-radius:12px; background: rgba(10,10,14,.6); }
 .logs-groups { display:grid; gap:10px; }
 .week-group { border:1px solid var(--border); border-radius:12px; padding:8px 10px; background: rgba(10,10,14,.58); }
@@ -120,6 +125,8 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
 .log-record-top strong { font-weight: 800; letter-spacing: .2px; }
 .log-record-top em { font-style: italic; font-weight: 700; color: #ffaaaa; }
 .log-record-time { margin-top: 4px; color: var(--muted); font-size: 13px; }
+.log-record-actions { margin-top: 6px; display:flex; gap:6px; }
+.log-record-actions button { padding:6px 9px; font-size:12px; }
 .next-shot-card {
   border: 1px solid rgba(255,90,90,.24);
   border-radius: 12px;
@@ -153,4 +160,6 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
   h2 { font-size:21px; }
   h3 { font-size:18px; }
   .mobile-quick-actions { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; position:static; margin-top:8px; padding:7px; border:1px solid var(--border); border-radius:12px; background: rgba(10,10,14,.94); }
+  .logs-header-row { align-items:flex-start; gap:8px; flex-direction:column; }
+  .logs-header-actions { width:100%; }
 }
