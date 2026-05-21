@@ -185,6 +185,17 @@ function clearWeeklyLogs() {
   if (currentView === "logs") renderLogsView();
 }
 
+function clearAllLogsForCurrentTab() {
+  var tab = getCurrentTrackerTab();
+  if (!tab) return;
+  var ok = window.confirm("Clear all logs for this peptide tab and restart cycle?");
+  if (!ok) return;
+  tab.logsByWeek = {};
+  persistTrackerState();
+  renderTrackerLogs();
+  if (currentView === "logs") renderLogsView();
+}
+
 function renderTrackerLogs() {
   var tab = getCurrentTrackerTab();
   if (!tab) return;

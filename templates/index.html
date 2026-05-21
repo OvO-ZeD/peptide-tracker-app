@@ -87,7 +87,10 @@
         <div class="panel logs-panel">
           <div class="logs-header-row">
             <h2>Historical Records</h2>
-            <span id="logs_total_count" class="badge"></span>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <span id="logs_total_count" class="badge"></span>
+              <button onclick="clearAllLogsForCurrentTab()">Clear Logs / Restart Cycle</button>
+            </div>
           </div>
           <canvas id="logs_chart" height="180"></canvas>
           <div id="logs_groups" class="logs-groups"></div>
