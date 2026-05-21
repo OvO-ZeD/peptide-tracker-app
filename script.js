@@ -91,6 +91,64 @@ function formatDateHeading(dateKey) {
   return d.toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" });
 }
 
+function parseTimeToParts(timeStr) {
+  var raw = String(timeStr || "08:00").split(":");
+  return { h: Number(raw[0] || 8), m: Number(raw[1] || 0) };
+}
+
+function computeNextShotForTab(tab) {
+  var everyDays = Number(tab.routineIntervalDays || 0);
+  if (everyDays <= 0) return null;
+  var t = parseTimeToParts(tab.routineTime || "08:00");
+  var anchor = tab.routineAnchorAt ? new Date(tab.routineAnchorAt) : new Date();
+  if (isNaN(anchor.getTime())) anchor = new Date();
+  anchor.setHours(t.h, t.m, 0, 0);
+  var next = new Date(anchor);
+  var now = new Date();
+  while (next <= now) next = new Date(next.getTime() + everyDays * 86400000);
+  return next;
+}
+
+function renderNextShotCard() {
+  var tab = getCurrentTrackerTab();
+  var card = document.getElementById("next_shot_card");
+  if (!tab || !card) return;
+  var next = computeNextShotForTab(tab);
+  if (!next) {
+    card.innerHTML = "Set routine days + time to show your next shot.";
+    return;
+  }
+  var diffMs = next.getTime() - Date.now();
+  var hrs = Math.max(0, Math.floor(diffMs / 3600000));
+  var days = Math.floor(hrs / 24);
+  var remH = hrs % 24;
+  card.innerHTML = "<strong>Next shot:</strong> " + next.toLocaleString() + "<br><span class=\"muted\">In " + days + "d " + remH + "h</span> <button class=\"inline-mini-btn\" onclick=\"logUpcomingShotNow()\">Log now</button>";
+}
+
+function saveRoutineSettings() {
+  var tab = getCurrentTrackerTab();
+  if (!tab) return;
+  tab.routineIntervalDays = Number((document.getElementById("routine_interval_days") || {}).value || 0);
+  tab.routineTime = ((document.getElementById("routine_time") || {}).value || "08:00");
+  if (!tab.routineAnchorAt) tab.routineAnchorAt = new Date().toISOString();
+  persistTrackerState();
+  renderNextShotCard();
+}
+
+function logUpcomingShotNow() {
+  var dt = document.getElementById("log_datetime");
+  if (dt) {
+    var n = new Date();
+    var local = new Date(n.getTime() - (n.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+    dt.value = local;
+  }
+  logAdministrationNow();
+  var tab = getCurrentTrackerTab();
+  if (tab) tab.routineAnchorAt = new Date().toISOString();
+  persistTrackerState();
+  renderNextShotCard();
+}
+
 function renderTrackerTabs() {
   var root = document.getElementById("tracker_tabs");
   if (!root) return;
@@ -339,8 +397,13 @@ function renderTrackerForm() {
   var logDose = document.getElementById("log_dose_mg");
   if (logPeptide) logPeptide.value = tab.peptideName || tab.name || "";
   if (logDose) logDose.value = tab.doseMg || "";
+  var intervalEl = document.getElementById("routine_interval_days");
+  var timeEl = document.getElementById("routine_time");
+  if (intervalEl) intervalEl.value = tab.routineIntervalDays || "";
+  if (timeEl) timeEl.value = tab.routineTime || "08:00";
   renderTrackerWeeklyTotal();
   renderTrackerLogs();
+  renderNextShotCard();
 }
 
 function renderTracker() {

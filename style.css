@@ -119,6 +119,19 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
 .log-record-top strong { font-weight: 800; letter-spacing: .2px; }
 .log-record-top em { font-style: italic; font-weight: 700; color: #ffaaaa; }
 .log-record-time { margin-top: 4px; color: var(--muted); font-size: 13px; }
+.next-shot-card {
+  border: 1px solid rgba(255,90,90,.24);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(13,13,18,.72);
+  line-height: 1.45;
+}
+.inline-mini-btn {
+  margin-left: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
 .mobile-quick-actions { display:none; }
 @media (max-width: 960px) {
   .app-shell { grid-template-columns:1fr; padding:14px; }

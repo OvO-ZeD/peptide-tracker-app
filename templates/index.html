@@ -52,6 +52,14 @@
               <button onclick="saveTrackerDetails()">Save Tracker Details</button>
               <p id="tracker_weekly_total"></p>
               <hr class="divider">
+              <h4>Routine Setup</h4>
+              <label>Every how many days?</label>
+              <input id="routine_interval_days" type="number" min="1" step="1" placeholder="e.g. 3">
+              <label>Preferred shot time</label>
+              <input id="routine_time" type="time">
+              <button onclick="saveRoutineSettings()">Save Routine</button>
+              <div id="next_shot_card" class="next-shot-card muted"></div>
+              <hr class="divider">
               <h4>Log Administration</h4>
               <label>Peptide (for this log)</label>
               <input id="log_peptide_name" type="text" placeholder="Peptide used">
