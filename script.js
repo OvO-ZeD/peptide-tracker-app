@@ -322,9 +322,33 @@ function renderTrackerTabs() {
   for (var i = 0; i < trackerState.tabs.length; i++) {
     var tab = trackerState.tabs[i];
     var cls = tab.id === trackerState.currentTabId ? "tracker-tab active" : "tracker-tab";
-    html += "<button class=\"" + cls + "\" onclick=\"selectTrackerTab('" + escapeHtml(tab.id) + "')\">" + escapeHtml(tab.name) + "</button>";
+    html += "<button class=\"" + cls + "\" onclick=\"selectTrackerTab('" + escapeHtml(tab.id) + "')\">" + escapeHtml(tab.name);
+    if (tab.id === trackerState.currentTabId) html += " <span class=\"tab-rename-icon\" onclick=\"event.stopPropagation();openTabNamePrompt('rename')\">✎</span>";
+    html += "</button>";
   }
   root.innerHTML = html;
+}
+
+function openTabNamePrompt(mode) {
+  var current = getCurrentTrackerTab();
+  var base = mode === "rename" ? ((current && current.name) || "") : "";
+  var label = mode === "rename" ? "Rename selected tab" : "New peptide tab name";
+  var name = window.prompt(label, base);
+  if (name == null) return;
+  name = String(name).trim();
+  if (!name) return;
+  if (mode === "rename") {
+    if (!current) return;
+    current.name = name;
+    persistTrackerState();
+    renderTrackerTabs();
+    return;
+  }
+  var id = "tab_" + Date.now();
+  trackerState.tabs.push({ id: id, name: name, peptideName: "", doseMg: 0, frequencyPerWeek: 1, logsByWeek: {} });
+  trackerState.currentTabId = id;
+  persistTrackerState();
+  renderTracker();
 }
 
 function selectTrackerTab(tabId) {
@@ -334,26 +358,11 @@ function selectTrackerTab(tabId) {
 }
 
 function addPeptideTab() {
-  var input = document.getElementById("new_peptide_name");
-  var name = (input.value || "").trim() || "Peptide " + (trackerState.tabs.length + 1);
-  var id = "tab_" + Date.now();
-  trackerState.tabs.push({ id: id, name: name, peptideName: "", doseMg: 0, frequencyPerWeek: 1, logsByWeek: {} });
-  trackerState.currentTabId = id;
-  input.value = "";
-  persistTrackerState();
-  renderTracker();
+  openTabNamePrompt("create");
 }
 
 function renameCurrentPeptideTab() {
-  var tab = getCurrentTrackerTab();
-  if (!tab) return;
-  var input = document.getElementById("rename_peptide_name");
-  var name = (input.value || "").trim();
-  if (!name) return;
-  tab.name = name;
-  input.value = "";
-  persistTrackerState();
-  renderTrackerTabs();
+  openTabNamePrompt("rename");
 }
 
 function saveTrackerDetails() {

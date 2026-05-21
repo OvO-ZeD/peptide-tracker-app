@@ -66,8 +66,12 @@ h3 { margin: 2px 0 6px; font-size: 20px; }
 input { padding: 8px 10px; border-radius: 10px; border: 1px solid rgba(255,90,90,.26); background: rgba(9,9,13,.84); color: var(--text); }
 input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0 3px rgba(255,77,77,.18); }
 .tracker-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.tracker-tabs-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.tracker-tabs-row .tracker-tabs { margin-bottom:0; flex:1; }
+.tab-plus-btn { padding:7px 10px; font-weight:800; white-space:nowrap; }
 .tracker-tab { border:1px solid rgba(255,90,90,.34); background: rgba(10,10,14,.76); color:#ffe9e9; border-radius:10px; padding:7px 10px; }
 .tracker-tab.active { border-color: rgba(255,77,77,.95); background: linear-gradient(135deg, rgba(255,77,77,.45), rgba(255,42,109,.3)); }
+.tab-rename-icon { display:inline-flex; align-items:center; justify-content:center; margin-left:6px; width:18px; height:18px; border-radius:999px; border:1px solid rgba(255,90,90,.5); font-size:11px; line-height:1; }
 .tracker-grid {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
@@ -173,6 +177,7 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
   input { padding:8px 10px; }
   button, .tracker-controls button, .tracker-card button, .mobile-quick-actions button { padding:8px 10px; }
   .tracker-controls, .tracker-grid { grid-template-columns:1fr; }
+  .tracker-tabs-row { align-items:stretch; }
   .log-presets { grid-template-columns:repeat(2,minmax(0,1fr)); }
   .log-now-row { grid-template-columns:1fr; }
   .top-controls { flex-direction:column; align-items:stretch; gap:8px; }

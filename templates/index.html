@@ -34,13 +34,10 @@
         <div id="tracker_mode" class="panel">
           <h2>Peptide Cycle Tracker</h2>
           <p class="subtitle">Track doses, frequency, weekly administrations, and vial unit conversions.</p>
-          <div class="tracker-controls">
-            <input id="new_peptide_name" type="text" placeholder="New peptide tab name">
-            <button id="add_peptide_btn" onclick="addPeptideTab()">Add Tab</button>
-            <input id="rename_peptide_name" type="text" placeholder="Rename selected tab">
-            <button id="rename_peptide_btn" onclick="renameCurrentPeptideTab()">Rename Tab</button>
+          <div class="tracker-tabs-row">
+            <div id="tracker_tabs" class="tracker-tabs"></div>
+            <button id="add_peptide_btn" class="tab-plus-btn" onclick="openTabNamePrompt('create')">+ New</button>
           </div>
-          <div id="tracker_tabs" class="tracker-tabs"></div>
           <div class="tracker-grid">
             <div class="tracker-card">
               <h3>Schedule</h3>
@@ -130,6 +127,6 @@
   </div>
   <div id="undo_toast" class="undo-toast"></div>
 
-  <script src="script.js?v=20260521j"></script>
+  <script src="script.js?v=20260521k"></script>
 </body>
 </html>
