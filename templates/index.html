@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Peptide Tracker">
   <title>Peptide Tracker</title>
-  <link rel="stylesheet" href="style.css?v=20260521b">
+  <link rel="stylesheet" href="style.css?v=20260521c">
   <link rel="manifest" href="manifest.webmanifest">
 </head>
 <body class="theme-dark density-clinical">
@@ -72,20 +72,6 @@
               <button onclick="calculateUnits()">Calculate Units</button>
               <p id="calc_result"></p>
             </div>
-            <div class="tracker-card tracker-card-routine">
-              <h4>Routine Setup</h4>
-              <label>Every how many days?</label>
-              <input id="routine_interval_days" type="number" min="1" step="1" placeholder="e.g. 3">
-              <label>Preferred shot time</label>
-              <input id="routine_time" type="time">
-              <label><input id="routine_reminder_enabled" type="checkbox"> Enable reminder notification</label>
-              <label>Remind me before shot (minutes)</label>
-              <input id="routine_reminder_lead" type="number" min="0" step="5" placeholder="e.g. 30">
-              <button onclick="saveRoutineSettings()">Save Routine</button>
-              <button onclick="requestReminderPermission()">Enable Notifications</button>
-              <button onclick="sendTestReminderNotification()">Send Test Notification</button>
-              <div id="next_shot_card" class="next-shot-card muted"></div>
-            </div>
           </div>
           <div class="mobile-quick-actions">
             <button onclick="logAdministrationNow()">Log Dose</button>
@@ -113,6 +99,6 @@
     </main>
   </div>
 
-  <script src="script.js?v=20260521b"></script>
+  <script src="script.js?v=20260521c"></script>
 </body>
 </html>
