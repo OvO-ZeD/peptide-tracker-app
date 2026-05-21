@@ -1,6 +1,8 @@
+var CACHE_NAME = "peptide-tracker-v2";
+
 self.addEventListener("install", function(event) {
   event.waitUntil(
-    caches.open("peptide-tracker-v1").then(function(cache) {
+    caches.open(CACHE_NAME).then(function(cache) {
       return cache.addAll(["/", "/style.css", "/script.js", "/manifest.webmanifest"]);
     })
   );
@@ -12,7 +14,7 @@ self.addEventListener("activate", function(event) {
     caches.keys().then(function(keys) {
       return Promise.all(
         keys.map(function(key) {
-          if (key !== "peptide-tracker-v1") {
+          if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
@@ -33,7 +35,7 @@ self.addEventListener("fetch", function(event) {
           return response;
         }
         var responseClone = response.clone();
-        caches.open("peptide-tracker-v1").then(function(cache) {
+        caches.open(CACHE_NAME).then(function(cache) {
           cache.put(event.request, responseClone);
         });
         return response;
