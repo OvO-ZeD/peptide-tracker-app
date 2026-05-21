@@ -107,6 +107,52 @@ function requestReminderPermission() {
   });
 }
 
+function sendTestReminderNotification() {
+  if (!("Notification" in window)) {
+    window.alert("Notifications are not supported on this device/browser.");
+    return;
+  }
+  if (Notification.permission !== "granted") {
+    window.alert("Please tap Enable Notifications first.");
+    return;
+  }
+
+  var tab = getCurrentTrackerTab();
+  var title = "Peptide reminder test";
+  var body = "This is a test reminder from your Home Screen app.";
+  if (tab) {
+    body = (tab.peptideName || tab.name || "Peptide") + " reminder test is working.";
+  }
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then(function(reg) {
+      if (reg && reg.showNotification) {
+        return reg.showNotification(title, {
+          body: body,
+          badge: "/favicon.ico",
+          icon: "/favicon.ico",
+          tag: "peptide-test-notification",
+          data: { url: "/" }
+        });
+      }
+      throw new Error("No active service worker registration.");
+    }).catch(function() {
+      try {
+        new Notification(title, { body: body });
+      } catch (e) {
+        window.alert("Unable to show a test notification on this device.");
+      }
+    });
+    return;
+  }
+
+  try {
+    new Notification(title, { body: body });
+  } catch (e) {
+    window.alert("Unable to show a test notification on this device.");
+  }
+}
+
 function scheduleReminderForTab(tab) {
   if (!tab || !tab.reminderEnabled) return;
   if (!("Notification" in window) || Notification.permission !== "granted") return;
