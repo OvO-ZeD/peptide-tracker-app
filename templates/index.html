@@ -7,7 +7,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Peptide Tracker">
   <title>Peptide Tracker</title>
-  <link rel="stylesheet" href="style.css?v=20260521f">
+  <link rel="stylesheet" href="style.css?v=20260521j">
   <link rel="manifest" href="manifest.webmanifest">
 </head>
 <body class="theme-dark density-clinical">
@@ -58,8 +58,12 @@
               <input id="log_peptide_name" type="text" placeholder="Peptide used">
               <label>Dose logged (mg)</label>
               <input id="log_dose_mg" type="number" min="0" step="0.01" placeholder="e.g. 1.5">
+              <div class="log-now-row">
+                <button class="log-now-primary" onclick="logNowPrimary()">Log Now</button>
+                <div id="log_now_time_display" class="log-now-time-display"></div>
+              </div>
               <label>Date & Time</label>
-              <input id="log_datetime" type="datetime-local">
+              <input id="log_datetime" type="datetime-local" onchange="updateLogDateDisplay()">
               <div class="log-presets">
                 <button onclick="setLogDatePreset('now')">Now</button>
                 <button onclick="setLogDatePreset('am')">Today AM</button>
@@ -126,6 +130,6 @@
   </div>
   <div id="undo_toast" class="undo-toast"></div>
 
-  <script src="script.js?v=20260521i"></script>
+  <script src="script.js?v=20260521j"></script>
 </body>
 </html>

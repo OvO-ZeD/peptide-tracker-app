@@ -225,6 +225,21 @@ function setLogDatePreset(preset) {
   }
   var local = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
   dt.value = local;
+  updateLogDateDisplay();
+}
+
+function updateLogDateDisplay() {
+  var dtInput = document.getElementById("log_datetime");
+  var display = document.getElementById("log_now_time_display");
+  if (!display) return;
+  var d = dtInput && dtInput.value ? new Date(dtInput.value) : new Date();
+  if (isNaN(d.getTime())) d = new Date();
+  display.textContent = d.toLocaleString();
+}
+
+function logNowPrimary() {
+  setLogDatePreset("now");
+  logAdministrationNow();
 }
 
 function deleteLogEntry(weekKey, index) {
@@ -558,6 +573,7 @@ function renderTrackerForm() {
   var logDose = document.getElementById("log_dose_mg");
   if (logPeptide) logPeptide.value = tab.peptideName || tab.name || "";
   if (logDose) logDose.value = tab.doseMg || "";
+  updateLogDateDisplay();
   renderTrackerWeeklyTotal();
   renderTrackerLogs();
 }
