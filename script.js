@@ -96,6 +96,36 @@ function parseTimeToParts(timeStr) {
   return { h: Number(raw[0] || 8), m: Number(raw[1] || 0) };
 }
 
+function requestReminderPermission() {
+  if (!("Notification" in window)) {
+    window.alert("Notifications are not supported on this device/browser.");
+    return;
+  }
+  Notification.requestPermission().then(function(permission) {
+    if (permission === "granted") window.alert("Notifications enabled.");
+    else window.alert("Notifications not enabled.");
+  });
+}
+
+function scheduleReminderForTab(tab) {
+  if (!tab || !tab.reminderEnabled) return;
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  var next = computeNextShotForTab(tab);
+  if (!next) return;
+  var leadMin = Number(tab.reminderLeadMinutes || 0);
+  var notifyAt = next.getTime() - (leadMin * 60000);
+  var delay = notifyAt - Date.now();
+  if (delay <= 0 || delay > 2147483647) return;
+  if (tab._reminderTimer) window.clearTimeout(tab._reminderTimer);
+  tab._reminderTimer = window.setTimeout(function() {
+    try {
+      new Notification("Upcoming peptide shot", {
+        body: (tab.peptideName || tab.name || "Peptide") + " due at " + next.toLocaleTimeString()
+      });
+    } catch (e) {}
+  }, delay);
+}
+
 function computeNextShotForTab(tab) {
   var everyDays = Number(tab.routineIntervalDays || 0);
   if (everyDays <= 0) return null;
@@ -130,9 +160,12 @@ function saveRoutineSettings() {
   if (!tab) return;
   tab.routineIntervalDays = Number((document.getElementById("routine_interval_days") || {}).value || 0);
   tab.routineTime = ((document.getElementById("routine_time") || {}).value || "08:00");
+  tab.reminderEnabled = !!((document.getElementById("routine_reminder_enabled") || {}).checked);
+  tab.reminderLeadMinutes = Number((document.getElementById("routine_reminder_lead") || {}).value || 0);
   if (!tab.routineAnchorAt) tab.routineAnchorAt = new Date().toISOString();
   persistTrackerState();
   renderNextShotCard();
+  scheduleReminderForTab(tab);
 }
 
 function logUpcomingShotNow() {
@@ -147,6 +180,7 @@ function logUpcomingShotNow() {
   if (tab) tab.routineAnchorAt = new Date().toISOString();
   persistTrackerState();
   renderNextShotCard();
+  if (tab) scheduleReminderForTab(tab);
 }
 
 function renderTrackerTabs() {
@@ -401,9 +435,14 @@ function renderTrackerForm() {
   var timeEl = document.getElementById("routine_time");
   if (intervalEl) intervalEl.value = tab.routineIntervalDays || "";
   if (timeEl) timeEl.value = tab.routineTime || "08:00";
+  var remEnabledEl = document.getElementById("routine_reminder_enabled");
+  var remLeadEl = document.getElementById("routine_reminder_lead");
+  if (remEnabledEl) remEnabledEl.checked = !!tab.reminderEnabled;
+  if (remLeadEl) remLeadEl.value = Number(tab.reminderLeadMinutes || 0);
   renderTrackerWeeklyTotal();
   renderTrackerLogs();
   renderNextShotCard();
+  scheduleReminderForTab(tab);
 }
 
 function renderTracker() {
