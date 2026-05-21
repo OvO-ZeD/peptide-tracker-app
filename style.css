@@ -10,6 +10,7 @@
   --red: #ff4d4d;
   --red-2: #ff2a6d;
   --glow: rgba(255, 77, 77, 0.28);
+  --mobile-actions-offset: calc(230px + env(safe-area-inset-bottom));
 }
 * { box-sizing: border-box; }
 body {
@@ -139,7 +140,7 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
   .sidebar-title { grid-column:1 / -1; }
 }
 @media (max-width: 760px) {
-  .page { padding:0 0 calc(120px + env(safe-area-inset-bottom)); }
+  .page { padding:0 0 var(--mobile-actions-offset); }
   .panel { padding:16px; }
   .tracker-card { padding:12px; gap:8px; }
   .tracker-card h4 { font-size:16px; margin:1px 0 0; }
@@ -147,6 +148,7 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
   input { padding:10px 11px; }
   button, .tracker-controls button, .tracker-card button, .mobile-quick-actions button { padding:10px 11px; }
   .tracker-controls, .tracker-grid { grid-template-columns:1fr; }
+  .tracker-card-routine { margin-bottom: calc(28px + env(safe-area-inset-bottom)); }
   .top-controls { flex-direction:column; align-items:stretch; gap:8px; }
   h1 { font-size:32px; }
   h2 { font-size:25px; }
