@@ -6,6 +6,7 @@ var trackerState = {
 var STORAGE_KEY_V2 = "peptide_tracker_state_v2";
 var STORAGE_KEY_V1 = "peptide_tracker_state_v1";
 var currentView = "home";
+var editingLogRef = null;
 
 function getWeekKey(dateObj) {
   var d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
@@ -148,6 +149,55 @@ function exportCurrentTabLogsCsv() {
   URL.revokeObjectURL(url);
 }
 
+function exportCurrentTabLogsJson() {
+  var tab = getCurrentTrackerTab();
+  if (!tab) return;
+  var data = JSON.stringify({ name: tab.name, peptideName: tab.peptideName, logsByWeek: tab.logsByWeek || {} }, null, 2);
+  var blob = new Blob([data], { type: "application/json;charset=utf-8;" });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = (tab.name || "peptide") + "-logs.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importCurrentTabLogsJson(event) {
+  var tab = getCurrentTrackerTab();
+  var file = event.target.files && event.target.files[0];
+  if (!tab || !file) return;
+  var reader = new FileReader();
+  reader.onload = function() {
+    try {
+      var parsed = JSON.parse(String(reader.result || "{}"));
+      tab.logsByWeek = parsed.logsByWeek && typeof parsed.logsByWeek === "object" ? parsed.logsByWeek : {};
+      persistTrackerState();
+      renderTrackerLogs();
+      if (currentView === "logs") renderLogsView();
+    } catch (e) {
+      window.alert("Invalid JSON file.");
+    }
+    event.target.value = "";
+  };
+  reader.readAsText(file);
+}
+
+function setLogDatePreset(preset) {
+  var dt = document.getElementById("log_datetime");
+  if (!dt) return;
+  var d = new Date();
+  if (preset === "am") d.setHours(9, 0, 0, 0);
+  else if (preset === "pm") d.setHours(18, 0, 0, 0);
+  else if (preset === "yesterday") {
+    d.setDate(d.getDate() - 1);
+    d.setHours(12, 0, 0, 0);
+  }
+  var local = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+  dt.value = local;
+}
+
 function deleteLogEntry(weekKey, index) {
   var tab = getCurrentTrackerTab();
   if (!tab || !tab.logsByWeek[weekKey]) return;
@@ -161,16 +211,31 @@ function editLogEntry(weekKey, index) {
   var tab = getCurrentTrackerTab();
   if (!tab || !tab.logsByWeek[weekKey] || !tab.logsByWeek[weekKey][index]) return;
   var current = normalizeLogEntry(tab.logsByWeek[weekKey][index], tab);
-  var newDose = window.prompt("Dose (mg)", Number(current.doseMg || 0).toFixed(2));
-  if (newDose === null) return;
-  var newDate = window.prompt("Date/Time (ISO)", current.at || new Date().toISOString());
-  if (newDate === null) return;
-  tab.logsByWeek[weekKey][index] = {
-    at: new Date(newDate).toISOString(),
-    peptideName: current.peptideName || tab.peptideName || tab.name || "Peptide",
-    doseMg: Number(newDose || 0)
-  };
+  editingLogRef = { weekKey: weekKey, index: index };
+  document.getElementById("edit_log_dose").value = Number(current.doseMg || 0).toFixed(2);
+  var d = new Date(current.at || new Date());
+  document.getElementById("edit_log_datetime").value = new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+  document.getElementById("edit_log_modal").classList.add("open");
+}
+
+function closeEditLogModal() {
+  editingLogRef = null;
+  var modal = document.getElementById("edit_log_modal");
+  if (modal) modal.classList.remove("open");
+}
+
+function saveEditLogModal() {
+  var tab = getCurrentTrackerTab();
+  if (!tab || !editingLogRef) return;
+  var weekKey = editingLogRef.weekKey;
+  var index = editingLogRef.index;
+  if (!tab.logsByWeek[weekKey] || !tab.logsByWeek[weekKey][index]) return;
+  var dose = Number((document.getElementById("edit_log_dose") || {}).value || 0);
+  var dt = (document.getElementById("edit_log_datetime") || {}).value;
+  var current = normalizeLogEntry(tab.logsByWeek[weekKey][index], tab);
+  tab.logsByWeek[weekKey][index] = { at: new Date(dt || new Date()).toISOString(), peptideName: current.peptideName || tab.peptideName || tab.name || "Peptide", doseMg: dose };
   persistTrackerState();
+  closeEditLogModal();
   renderTrackerLogs();
   if (currentView === "logs") renderLogsView();
 }

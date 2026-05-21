@@ -59,6 +59,12 @@
               <input id="log_dose_mg" type="number" min="0" step="0.01" placeholder="e.g. 1.5">
               <label>Date & Time</label>
               <input id="log_datetime" type="datetime-local">
+              <div class="log-presets">
+                <button onclick="setLogDatePreset('now')">Now</button>
+                <button onclick="setLogDatePreset('am')">Today AM</button>
+                <button onclick="setLogDatePreset('pm')">Today PM</button>
+                <button onclick="setLogDatePreset('yesterday')">Yesterday</button>
+              </div>
               <button onclick="logAdministrationNow()">Log Dose Entry</button>
             </div>
             <div class="tracker-card">
@@ -90,6 +96,8 @@
             <div class="logs-header-actions">
               <span id="logs_total_count" class="badge"></span>
               <button onclick="exportCurrentTabLogsCsv()">Export CSV</button>
+              <button onclick="exportCurrentTabLogsJson()">Export JSON</button>
+              <label class="import-json-btn">Import JSON<input id="import_logs_json" type="file" accept="application/json" onchange="importCurrentTabLogsJson(event)"></label>
               <button onclick="clearAllLogsForCurrentTab()">Clear Logs / Restart Cycle</button>
             </div>
           </div>
@@ -101,6 +109,20 @@
     </main>
   </div>
 
-  <script src="script.js?v=20260521g"></script>
+  <div id="edit_log_modal" class="modal-backdrop">
+    <div class="modal-card">
+      <h3>Edit Log</h3>
+      <label>Dose (mg)</label>
+      <input id="edit_log_dose" type="number" min="0" step="0.01">
+      <label>Date & Time</label>
+      <input id="edit_log_datetime" type="datetime-local">
+      <div class="modal-actions">
+        <button onclick="closeEditLogModal()">Cancel</button>
+        <button onclick="saveEditLogModal()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js?v=20260521h"></script>
 </body>
 </html>
