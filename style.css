@@ -107,6 +107,7 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
 .logs-groups { display:grid; gap:10px; }
 .week-group { border:1px solid var(--border); border-radius:12px; padding:8px 10px; background: rgba(10,10,14,.58); }
 .week-group summary { cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+.date-heading { font-weight: 780; letter-spacing: .2px; color: #ffe8e8; }
 .week-group ul { margin:8px 0 0; padding-left:0; list-style:none; display:grid; gap:8px; }
 .log-record {
   border: 1px solid rgba(255,90,90,.24);

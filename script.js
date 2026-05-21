@@ -79,6 +79,18 @@ function normalizeLogEntry(entry, tab) {
   return null;
 }
 
+function getDateKeyFromIso(isoString) {
+  var d = new Date(isoString);
+  if (isNaN(d.getTime())) d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+
+function formatDateHeading(dateKey) {
+  var d = new Date(dateKey + "T00:00:00");
+  if (isNaN(d.getTime())) return dateKey;
+  return d.toLocaleDateString(undefined, { weekday: "short", year: "numeric", month: "long", day: "numeric" });
+}
+
 function renderTrackerTabs() {
   var root = document.getElementById("tracker_tabs");
   if (!root) return;
@@ -205,18 +217,29 @@ function renderTrackerLogs() {
   if (countEl) countEl.innerText = "This week administrations: " + logs.length;
 }
 
-function getHistoricalLogWeeks(tab) {
-  var weeks = [];
+function getHistoricalLogDates(tab) {
+  var grouped = {};
   var logsByWeek = tab.logsByWeek || {};
   for (var week in logsByWeek) {
     if (Object.prototype.hasOwnProperty.call(logsByWeek, week) && logsByWeek[week] && logsByWeek[week].length) {
       var normalized = logsByWeek[week].map(function(item) { return normalizeLogEntry(item, tab); }).filter(Boolean);
-      normalized.sort(function(a, b) { return (b.at || "").localeCompare(a.at || ""); });
-      weeks.push({ week: week, logs: normalized });
+      for (var i = 0; i < normalized.length; i++) {
+        var rec = normalized[i];
+        var dateKey = getDateKeyFromIso(rec.at);
+        if (!grouped[dateKey]) grouped[dateKey] = [];
+        grouped[dateKey].push(rec);
+      }
     }
   }
-  weeks.sort(function(a, b) { return a.week < b.week ? 1 : -1; });
-  return weeks;
+
+  var dateKeys = Object.keys(grouped).sort(function(a, b) { return a < b ? 1 : -1; });
+  var dates = [];
+  for (var k = 0; k < dateKeys.length; k++) {
+    var key = dateKeys[k];
+    grouped[key].sort(function(a, b) { return (b.at || "").localeCompare(a.at || ""); });
+    dates.push({ dateKey: key, dateLabel: formatDateHeading(key), logs: grouped[key] });
+  }
+  return dates;
 }
 
 function renderLogsView() {
@@ -227,16 +250,16 @@ function renderLogsView() {
   var totalCountEl = document.getElementById("logs_total_count");
   if (!groupsRoot || !totalCountEl) return;
 
-  var weeks = getHistoricalLogWeeks(tab);
+  var dateGroups = getHistoricalLogDates(tab);
   var total = 0;
   var html = "";
-  for (var i = 0; i < weeks.length; i++) {
-    total += weeks[i].logs.length;
+  for (var i = 0; i < dateGroups.length; i++) {
+    total += dateGroups[i].logs.length;
     html += "<details class=\"week-group\"" + (i === 0 ? " open" : "") + ">";
-    html += "<summary>" + escapeHtml(weeks[i].week) + " <span class=\"badge\">" + weeks[i].logs.length + "</span></summary>";
+    html += "<summary><span class=\"date-heading\">" + escapeHtml(dateGroups[i].dateLabel) + "</span> <span class=\"badge\">" + dateGroups[i].logs.length + "</span></summary>";
     html += "<ul class=\"log-records\">";
-    for (var j = 0; j < weeks[i].logs.length; j++) {
-      var rec = weeks[i].logs[j];
+    for (var j = 0; j < dateGroups[i].logs.length; j++) {
+      var rec = dateGroups[i].logs[j];
       html += "<li class=\"log-record\">";
       html += "<div class=\"log-record-top\"><strong>" + escapeHtml(rec.peptideName || "Peptide") + "</strong> <em>" + Number(rec.doseMg || 0).toFixed(2) + " mg</em></div>";
       html += "<div class=\"log-record-time\">" + new Date(rec.at).toLocaleString() + "</div>";
@@ -247,10 +270,10 @@ function renderLogsView() {
 
   totalCountEl.textContent = total + " total logs";
   groupsRoot.innerHTML = html || "<p class=\"muted\">No historical logs yet. Log your first administration from Home.</p>";
-  renderLogsChart(weeks, tab);
+  renderLogsChart(dateGroups, tab);
 }
 
-function renderLogsChart(weeks, tab) {
+function renderLogsChart(dateGroups, tab) {
   var canvas = document.getElementById("logs_chart");
   if (!canvas || !canvas.getContext) return;
   var ctx = canvas.getContext("2d");
@@ -259,7 +282,7 @@ function renderLogsChart(weeks, tab) {
   canvas.width = w;
   ctx.clearRect(0, 0, w, h);
 
-  var labels = weeks.slice(0, 12).reverse();
+  var labels = dateGroups.slice(0, 12).reverse();
   var values = [];
   var maxY = 1;
   for (var i = 0; i < labels.length; i++) {
