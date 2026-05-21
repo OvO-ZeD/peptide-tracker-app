@@ -164,7 +164,8 @@ function renderTrackerLogs() {
   if (!tab) return;
   var week = getWeekKey(new Date());
   var logs = tab.logsByWeek[week] || [];
-  document.getElementById("tracker_log_count").innerText = "This week administrations: " + logs.length;
+  var countEl = document.getElementById("tracker_log_count");
+  if (countEl) countEl.innerText = "This week administrations: " + logs.length;
 }
 
 function getHistoricalLogWeeks(tab) {
