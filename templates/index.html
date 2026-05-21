@@ -40,19 +40,17 @@
           </div>
           <div class="tracker-grid">
             <div class="tracker-card">
-              <h3>Schedule</h3>
+              <h3>Dose Planner + Quick Log</h3>
               <label>Peptide Name</label>
               <input id="tracker_peptide_name" type="text" placeholder="Peptide">
-              <label>Dose (mg)</label>
+              <label>Default Dose (mg)</label>
               <input id="tracker_dose_mg" type="number" min="0" step="0.01" placeholder="e.g. 1.5">
               <label>Frequency (per week)</label>
               <input id="tracker_frequency" type="number" min="1" step="1" placeholder="e.g. 3">
-              <button onclick="saveTrackerDetails()">Save Tracker Details</button>
+              <button onclick="saveTrackerDetails()">Save Defaults</button>
               <p id="tracker_weekly_total"></p>
               <hr class="divider">
-              <h4>Log Administration</h4>
-              <label>Peptide (for this log)</label>
-              <input id="log_peptide_name" type="text" placeholder="Peptide used">
+              <h4>Quick Log</h4>
               <label>Dose logged (mg)</label>
               <input id="log_dose_mg" type="number" min="0" step="0.01" placeholder="e.g. 1.5">
               <div class="log-now-row">
@@ -127,6 +125,6 @@
   </div>
   <div id="undo_toast" class="undo-toast"></div>
 
-  <script src="script.js?v=20260521k"></script>
+  <script src="script.js?v=20260521l"></script>
 </body>
 </html>

@@ -414,6 +414,7 @@ function saveTrackerDetails() {
   renderTrackerWeeklyTotal();
   if (currentView === "logs") renderLogsView();
   pulseElement("tracker_weekly_total");
+  renderTrackerForm();
 }
 
 function renderTrackerWeeklyTotal() {
@@ -442,7 +443,7 @@ function logAdministrationNow() {
   var tab = getCurrentTrackerTab();
   if (!tab) return;
   var doseVal = Number((document.getElementById("log_dose_mg") || {}).value || tab.doseMg || 0);
-  var peptideVal = ((document.getElementById("log_peptide_name") || {}).value || tab.peptideName || tab.name || "Peptide").trim();
+  var peptideVal = ((document.getElementById("tracker_peptide_name") || {}).value || tab.peptideName || tab.name || "Peptide").trim();
   var dtInput = (document.getElementById("log_datetime") || {}).value;
   var logDate = dtInput ? new Date(dtInput) : new Date();
   if (isNaN(logDate.getTime())) logDate = new Date();

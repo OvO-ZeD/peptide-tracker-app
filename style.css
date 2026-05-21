@@ -112,6 +112,8 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
 .log-now-time-display { border:1px solid rgba(255,90,90,.3); border-radius:10px; padding:9px 10px; background: rgba(9,9,13,.72); color:#ffdede; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .divider { border: 0; border-top: 1px solid rgba(255,90,90,.25); margin: 6px 0; }
 .tracker-card h4 { margin: 1px 0 0; font-size: 15px; font-weight: 800; font-style: italic; color: #ffd0d0; }
+.tracker-card h3 { margin-bottom: 2px; }
+.tracker-card .divider { margin: 4px 0; }
 .logs-panel { display:grid; gap:10px; }
 .logs-header-row { display:flex; justify-content:space-between; align-items:center; }
 .logs-header-actions { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
