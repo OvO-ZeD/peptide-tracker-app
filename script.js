@@ -9,6 +9,7 @@ var currentView = "home";
 var editingLogRef = null;
 var undoDeleteState = null;
 var undoDeleteTimer = null;
+var editingTabNameId = null;
 
 function getWeekKey(dateObj) {
   var d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
@@ -322,11 +323,49 @@ function renderTrackerTabs() {
   for (var i = 0; i < trackerState.tabs.length; i++) {
     var tab = trackerState.tabs[i];
     var cls = tab.id === trackerState.currentTabId ? "tracker-tab active" : "tracker-tab";
-    html += "<button class=\"" + cls + "\" onclick=\"selectTrackerTab('" + escapeHtml(tab.id) + "')\">" + escapeHtml(tab.name);
-    if (tab.id === trackerState.currentTabId) html += " <span class=\"tab-rename-icon\" onclick=\"event.stopPropagation();openTabNamePrompt('rename')\">✎</span>";
+    html += "<button class=\"" + cls + "\" onclick=\"selectTrackerTab('" + escapeHtml(tab.id) + "')\">";
+    if (tab.id === editingTabNameId) {
+      html += "<input class=\"tab-rename-input\" id=\"tab_rename_input\" value=\"" + escapeHtml(tab.name) + "\" onclick=\"event.stopPropagation()\" onkeydown=\"handleTabRenameKeydown(event)\" onblur=\"finishInlineRename()\">";
+    } else {
+      html += escapeHtml(tab.name);
+    }
+    if (tab.id === trackerState.currentTabId) html += " <span class=\"tab-rename-icon\" onclick=\"event.stopPropagation();startInlineRename()\">✎</span>";
     html += "</button>";
   }
   root.innerHTML = html;
+  if (editingTabNameId) {
+    var input = document.getElementById("tab_rename_input");
+    if (input) {
+      input.focus();
+      input.select();
+    }
+  }
+}
+
+function startInlineRename() {
+  var current = getCurrentTrackerTab();
+  if (!current) return;
+  editingTabNameId = current.id;
+  renderTrackerTabs();
+}
+
+function handleTabRenameKeydown(event) {
+  if (event.key === "Enter") finishInlineRename();
+  if (event.key === "Escape") {
+    editingTabNameId = null;
+    renderTrackerTabs();
+  }
+}
+
+function finishInlineRename() {
+  if (!editingTabNameId) return;
+  var input = document.getElementById("tab_rename_input");
+  var nextName = input ? String(input.value || "").trim() : "";
+  var current = getCurrentTrackerTab();
+  if (current && nextName) current.name = nextName;
+  editingTabNameId = null;
+  persistTrackerState();
+  renderTrackerTabs();
 }
 
 function openTabNamePrompt(mode) {

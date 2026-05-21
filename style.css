@@ -72,6 +72,7 @@ input:focus { outline: none; border-color: rgba(255,77,77,.8); box-shadow: 0 0 0
 .tracker-tab { border:1px solid rgba(255,90,90,.34); background: rgba(10,10,14,.76); color:#ffe9e9; border-radius:10px; padding:7px 10px; }
 .tracker-tab.active { border-color: rgba(255,77,77,.95); background: linear-gradient(135deg, rgba(255,77,77,.45), rgba(255,42,109,.3)); }
 .tab-rename-icon { display:inline-flex; align-items:center; justify-content:center; margin-left:6px; width:18px; height:18px; border-radius:999px; border:1px solid rgba(255,90,90,.5); font-size:11px; line-height:1; }
+.tab-rename-input { width:120px; max-width:100%; padding:4px 7px; border-radius:8px; border:1px solid rgba(255,90,90,.6); background: rgba(8,8,12,.95); color:#ffe9e9; }
 .tracker-grid {
   display:grid;
   grid-template-columns:repeat(2,minmax(0,1fr));
