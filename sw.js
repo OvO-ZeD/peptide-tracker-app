@@ -1,4 +1,4 @@
-var CACHE_NAME = "peptide-tracker-v3";
+var CACHE_NAME = "peptide-tracker-v4";
 
 self.addEventListener("install", function(event) {
   event.waitUntil(
