@@ -51,6 +51,15 @@
               <input id="tracker_frequency" type="number" min="1" step="1" placeholder="e.g. 3">
               <button onclick="saveTrackerDetails()">Save Tracker Details</button>
               <p id="tracker_weekly_total"></p>
+              <hr class="divider">
+              <h4>Log Administration</h4>
+              <label>Peptide (for this log)</label>
+              <input id="log_peptide_name" type="text" placeholder="Peptide used">
+              <label>Dose logged (mg)</label>
+              <input id="log_dose_mg" type="number" min="0" step="0.01" placeholder="e.g. 1.5">
+              <label>Date & Time</label>
+              <input id="log_datetime" type="datetime-local">
+              <button onclick="logAdministrationNow()">Log Dose Entry</button>
             </div>
             <div class="tracker-card">
               <h3>Vial Unit Calculator</h3>

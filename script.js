@@ -61,6 +61,24 @@ function escapeHtml(text) {
     .replace(/'/g, "&#39;");
 }
 
+function normalizeLogEntry(entry, tab) {
+  if (typeof entry === "string") {
+    return {
+      at: entry,
+      peptideName: (tab && tab.peptideName) || (tab && tab.name) || "Peptide",
+      doseMg: Number((tab && tab.doseMg) || 0)
+    };
+  }
+  if (entry && typeof entry === "object") {
+    return {
+      at: entry.at || entry.date || new Date().toISOString(),
+      peptideName: entry.peptideName || (tab && tab.peptideName) || (tab && tab.name) || "Peptide",
+      doseMg: Number(entry.doseMg || 0)
+    };
+  }
+  return null;
+}
+
 function renderTrackerTabs() {
   var root = document.getElementById("tracker_tabs");
   if (!root) return;
@@ -139,10 +157,18 @@ function calculateUnits() {
 function logAdministrationNow() {
   var tab = getCurrentTrackerTab();
   if (!tab) return;
-  var now = new Date();
-  var week = getWeekKey(now);
+  var doseVal = Number((document.getElementById("log_dose_mg") || {}).value || tab.doseMg || 0);
+  var peptideVal = ((document.getElementById("log_peptide_name") || {}).value || tab.peptideName || tab.name || "Peptide").trim();
+  var dtInput = (document.getElementById("log_datetime") || {}).value;
+  var logDate = dtInput ? new Date(dtInput) : new Date();
+  if (isNaN(logDate.getTime())) logDate = new Date();
+  var week = getWeekKey(logDate);
   if (!tab.logsByWeek[week]) tab.logsByWeek[week] = [];
-  tab.logsByWeek[week].push(now.toISOString());
+  tab.logsByWeek[week].push({
+    at: logDate.toISOString(),
+    peptideName: peptideVal,
+    doseMg: doseVal
+  });
   persistTrackerState();
   renderTrackerLogs();
   if (currentView === "logs") renderLogsView();
@@ -173,7 +199,9 @@ function getHistoricalLogWeeks(tab) {
   var logsByWeek = tab.logsByWeek || {};
   for (var week in logsByWeek) {
     if (Object.prototype.hasOwnProperty.call(logsByWeek, week) && logsByWeek[week] && logsByWeek[week].length) {
-      weeks.push({ week: week, logs: logsByWeek[week].slice().sort(function(a, b) { return b.localeCompare(a); }) });
+      var normalized = logsByWeek[week].map(function(item) { return normalizeLogEntry(item, tab); }).filter(Boolean);
+      normalized.sort(function(a, b) { return (b.at || "").localeCompare(a.at || ""); });
+      weeks.push({ week: week, logs: normalized });
     }
   }
   weeks.sort(function(a, b) { return a.week < b.week ? 1 : -1; });
@@ -195,8 +223,14 @@ function renderLogsView() {
     total += weeks[i].logs.length;
     html += "<details class=\"week-group\"" + (i === 0 ? " open" : "") + ">";
     html += "<summary>" + escapeHtml(weeks[i].week) + " <span class=\"badge\">" + weeks[i].logs.length + "</span></summary>";
-    html += "<ul>";
-    for (var j = 0; j < weeks[i].logs.length; j++) html += "<li>" + new Date(weeks[i].logs[j]).toLocaleString() + "</li>";
+    html += "<ul class=\"log-records\">";
+    for (var j = 0; j < weeks[i].logs.length; j++) {
+      var rec = weeks[i].logs[j];
+      html += "<li class=\"log-record\">";
+      html += "<div class=\"log-record-top\"><strong>" + escapeHtml(rec.peptideName || "Peptide") + "</strong> <em>" + Number(rec.doseMg || 0).toFixed(2) + " mg</em></div>";
+      html += "<div class=\"log-record-time\">" + new Date(rec.at).toLocaleString() + "</div>";
+      html += "</li>";
+    }
     html += "</ul></details>";
   }
 
@@ -218,7 +252,8 @@ function renderLogsChart(weeks, tab) {
   var values = [];
   var maxY = 1;
   for (var i = 0; i < labels.length; i++) {
-    var v = labels[i].logs.length;
+    var v = 0;
+    for (var n = 0; n < labels[i].logs.length; n++) v += Number(labels[i].logs[n].doseMg || 0);
     values.push(v);
     if (v > maxY) maxY = v;
   }
@@ -236,8 +271,8 @@ function renderLogsChart(weeks, tab) {
 
   if (!values.length) return;
 
-  ctx.strokeStyle = "#54d6c8";
-  ctx.fillStyle = "rgba(84,214,200,0.2)";
+  ctx.strokeStyle = "#ff5a5a";
+  ctx.fillStyle = "rgba(255,90,90,0.2)";
   ctx.lineWidth = 2;
   ctx.beginPath();
   for (var k = 0; k < values.length; k++) {
@@ -247,7 +282,7 @@ function renderLogsChart(weeks, tab) {
   }
   ctx.stroke();
 
-  var expected = Number(tab.frequencyPerWeek) || 0;
+  var expected = (Number(tab.frequencyPerWeek) || 0) * (Number(tab.doseMg) || 0);
   if (expected > 0) {
     ctx.strokeStyle = "rgba(139,125,255,0.8)";
     ctx.setLineDash([6, 5]);
@@ -266,6 +301,10 @@ function renderTrackerForm() {
   document.getElementById("tracker_peptide_name").value = tab.peptideName || "";
   document.getElementById("tracker_dose_mg").value = tab.doseMg || "";
   document.getElementById("tracker_frequency").value = tab.frequencyPerWeek || 1;
+  var logPeptide = document.getElementById("log_peptide_name");
+  var logDose = document.getElementById("log_dose_mg");
+  if (logPeptide) logPeptide.value = tab.peptideName || tab.name || "";
+  if (logDose) logDose.value = tab.doseMg || "";
   renderTrackerWeeklyTotal();
   renderTrackerLogs();
 }
