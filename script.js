@@ -579,7 +579,7 @@ function renderLogsChart(dateGroups, tab) {
   var gx = w - pad * 2;
   var gy = h - pad * 2;
 
-  ctx.strokeStyle = "rgba(166,175,203,0.35)";
+  ctx.strokeStyle = "rgba(196, 181, 181, 0.3)";
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(pad, h - pad);
@@ -588,9 +588,15 @@ function renderLogsChart(dateGroups, tab) {
 
   if (!values.length) return;
 
-  ctx.strokeStyle = "#ff5a5a";
-  ctx.fillStyle = "rgba(255,90,90,0.2)";
-  ctx.lineWidth = 2;
+  var grad = ctx.createLinearGradient(pad, 0, w - pad, 0);
+  grad.addColorStop(0, "#ff3b3b");
+  grad.addColorStop(0.5, "#ff2a6d");
+  grad.addColorStop(1, "#c0392b");
+  ctx.strokeStyle = grad;
+  ctx.fillStyle = "rgba(255,59,59,0.15)";
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = "rgba(255,59,59,0.5)";
+  ctx.shadowBlur = 8;
   ctx.beginPath();
   for (var k = 0; k < values.length; k++) {
     var x = pad + (gx * (values.length === 1 ? 0.5 : k / (values.length - 1)));
@@ -598,10 +604,11 @@ function renderLogsChart(dateGroups, tab) {
     if (k === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   }
   ctx.stroke();
+  ctx.shadowBlur = 0;
 
   var expected = (Number(tab.frequencyPerWeek) || 0) * (Number(tab.doseMg) || 0);
   if (expected > 0) {
-    ctx.strokeStyle = "rgba(139,125,255,0.8)";
+    ctx.strokeStyle = "rgba(255, 180, 180, 0.6)";
     ctx.setLineDash([6, 5]);
     var ey = h - pad - (gy * (Math.min(expected, maxY) / maxY));
     ctx.beginPath();
@@ -656,13 +663,34 @@ function registerServiceWorker() {
 
 function toggleTheme() { document.body.classList.toggle("theme-dark"); }
 
+/* ── 3D Card Tilt ── */
+function attachCardTilt() {
+  var cards = document.querySelectorAll("[data-tilt]");
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].addEventListener("mousemove", function(e) {
+      var rect = this.getBoundingClientRect();
+      var x = e.clientX - rect.left;
+      var y = e.clientY - rect.top;
+      var centerX = rect.width / 2;
+      var centerY = rect.height / 2;
+      var rotateX = ((y - centerY) / centerY) * -6;
+      var rotateY = ((x - centerX) / centerX) * 6;
+      this.style.transform = "perspective(800px) rotateX(" + rotateX.toFixed(2) + "deg) rotateY(" + rotateY.toFixed(2) + "deg) translateY(-2px)";
+    });
+    cards[i].addEventListener("mouseleave", function() {
+      this.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) translateY(0px)";
+    });
+  }
+}
+
+/* ── Background parallax ── */
 function attachBackgroundParallax() {
   var particles = document.getElementById("bg_particles");
   if (!particles) return;
   window.addEventListener("mousemove", function(e) {
-    var x = (e.clientX / window.innerWidth - 0.5) * 8;
-    var y = (e.clientY / window.innerHeight - 0.5) * 8;
-    particles.style.transform = "translate(" + x.toFixed(2) + "px," + y.toFixed(2) + "px)";
+    var x = (e.clientX / window.innerWidth - 0.5) * 12;
+    var y = (e.clientY / window.innerHeight - 0.5) * 12;
+    particles.style.transform = "translate3d(" + x.toFixed(2) + "px," + y.toFixed(2) + "px, 0) rotate(" + (x * 0.02).toFixed(2) + "deg)";
   });
 }
 
@@ -671,3 +699,4 @@ loadTrackerState();
 renderTracker();
 switchView("home");
 registerServiceWorker();
+attachCardTilt();
